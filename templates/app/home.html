@@ -1,0 +1,21 @@
+
+{% extends 'base.html' %}
+{% block bodyblock %}
+    <div class="has-text-centered container is-fluid has-background-white-ter" style="height: 100vh; width: 100vw; padding-top: 8%;">
+        <h1 class="title">Weather App</h1>
+
+        <h2> </h2>
+        <h3 class="title is-3">Please enter the City Name</h3>
+
+        <form class="form" action="{% url 'search_city' %}" method="get">
+            <input
+                class="input is-large is-rounded"
+                type="search"
+                name="city"
+                placeholder="Enter City Name"
+                class="form-control"
+            />
+        </form>
+
+    </div>
+{% endblock bodyblock %}

@@ -1,0 +1,332 @@
+{% extends 'base.html' %}
+
+{% block bodyblock %}
+    {% if success %}
+        <div class="is-family-primary has-background-white-ter px-3">
+            <div class="has-text-centered container is-fluid has-background-white-ter py-5">
+
+                <form class="form" action="{% url 'search_city' %}" method="get">
+                    <input
+                        class="input is-medium is-rounded"
+                        type="search"
+                        name="city"
+                        placeholder="Enter City Name"
+                        class="form-control"
+                    />
+                </form>
+            </div>
+
+            
+
+            <div class="box has-text-light" style="{% if details.weather_details.temp_c > threshold_values.max_temp %} background-image: linear-gradient(120deg, #f6d365 0%, #fda085 100%); {% elif details.weather_details.temp_c < threshold_values.min_temp %} background-image: linear-gradient(45deg, #8baaaa 0%, #ae8b9c 100%); {% else %} background-image: linear-gradient(to top, #e6b980 0%, #eacda3 100%); {% endif %}">
+                <small>Local Time: {{details.weather_details.localtime}}</small>
+                <p class="title is-3 is-size-4-mobile">{{city | title}}, {{details.weather_details.region}}, {{details.weather_details.country}}</p>
+                <div class="is-align-self-center">
+
+                    <div class="columns is-align-items-center">
+                        <div class="column">
+                            <article class="media">
+                                <div class="media-left">
+                                <figure class="image is-96x96">
+                                    <img src={{details.weather_details.weather_icon}} alt="{{ details.weather_details.weather_desc }}" />
+                                </figure>
+                                </div>
+                                <div class="media-content">
+                                <div class="content">
+                                    <h2>
+                                    <small class="is-size-5-mobile">{{ details.weather_details.weather_desc | title }}</small>
+                                    <br />
+                                    <strong class="tags are-large"><span class="tag is-hoverable">{{details.weather_details.temp_c}}&deg;C | {{details.weather_details.temp_f}}&deg;F</span></strong> 
+                                    </h2>
+                                </div>
+                                </div>
+                            </article>
+                        </div>
+                        <div class="column">
+                            
+                            <table class="table has-text-light">
+                                <tr>
+                                    <td>Wind Speed&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{details.weather_details.wind_kph}} km/hr - <strong>{{ details.weather_details.wind_dir }}</strong></td>
+                                    <td>Pressure&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{details.weather_details.pressure_mb}} mb</td>
+                                </tr>
+                                <tr>
+                                    <td>Precipitation&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{details.weather_details.precip_mm}} mm</td>
+                                    <td>Humidity&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{details.weather_details.humidity}}%</td>
+                                </tr>
+                                <tr>
+                                    <td>Cloud Cover&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{details.weather_details.cloud}}%</td>
+                                    <td>UV Index&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{details.weather_details.uv}}</td>
+                                </tr>
+                        
+                            </table>
+
+                            <div>
+                                {% if details.weather_details.temp_c > threshold_values.max_temp %}
+                                    <li>High Temperature</li>
+                                {% elif details.weather_details.temp_c < threshold_values.min_temp %}
+                                    <li>Cool and Pleasant Temperature</li>
+                                {% else %}
+                                    <li>Normal Temperature</li>
+                                {% endif %}
+
+                                {% if details.weather_details.humidity > threshold_values.max_humidity %}
+                                    <li>Humidity is High</li>
+                                {% elif details.weather_details.humidity < threshold_values.min_humidity %}
+                                    <li>Humidity is Low</li>
+                                {% else %}
+                                    <li>Humidity is Normal</li>
+                                {% endif %}
+
+
+                                {% if details.weather_details.wind_kph >= threshold_values.gentle_wind_start and details.weather_details.wind_kph <= threshold_values.gentle_wind_end %}
+                                    <li>Gentle Breeze</li>
+                                {% elif details.weather_details.wind_kph >= threshold_values.moderate_wind_start and details.weather_details.wind_kph <= threshold_values.moderate_wind_end %}
+                                    <li>Moedrate Breeze</li>
+                                {% elif details.weather_details.wind_kph >= threshold_values.high_wind %}
+                                    <li>Strong Breeze</li>
+                                {% elif details.weather_details.wind_kph <= threshold_values.light_wind %}
+                                    <li>Light Gentle Breeze</li>
+                                {% endif %}
+
+
+                                {% if details.weather_details.precip_mm >= threshold_values.light_rainfall_start and details.weather_details.precip_mm <= threshold_values.light_rainfall_end %}
+                                    <li>May Experience a Rain Shower</li>
+                                {% elif details.weather_details.precip_mm >= threshold_values.max_rainfall_start and details.weather_details.precip_mm <= threshold_values.max_rainfall_end %}
+                                    <li>May Experience a Heavy Rainfall</li>
+                                {% else %}
+                                    <li>No Rain Shower Expected</li>
+                                {% endif %}
+
+                                {% if details.weather_details.uv >= threshold_values.min_uv_index_start and details.weather_details.uv <= threshold_values.min_uv_index_end %}
+                                    <li>Less UV Index.You can safely enjoy being outside!</li>
+                                {% elif details.weather_details.uv >= threshold_values.mod_uv_index_start and details.weather_details.uv <= threshold_values.mod_uv_index_end %}
+                                    <li>Moderate UV Index. Seek shade during midday hours!</li>
+                                {% elif details.weather_details.uv >= threshold_values.max_uv_index_threshold %}
+                                    <li>High UV Index. Avoid being outside during midday hours!!</li>
+                                {% endif %}
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <br>
+                <small>Last Updated: {{details.timestamp}}</small>
+            
+            </div>
+
+
+
+            <br>
+            <div class="has-text-centered">
+                <h1 class="is-size-3 is-size-5-mobile">Hourly Details for {{today_date}}</h1>
+                <br>
+                <table class="table is-bordered is-striped is-hoverable is-fullwidth has-text-centered">
+                    <tr>
+                        <th>Today Timing</th>
+                        <th>Condition</th>
+                        <th>Temperature</th>
+                        <th>Weather</th>
+                        <th>Wind Speed</th>
+                        <th>Pressure</th>
+                        <th>Precipitation</th>
+                        <th>Humidity</th>
+                        <th>Cloud Cover</th>
+                        <th>UV Index</th>
+                    </tr>
+                    {% for hour_data in hourly_details %}
+                        <tr>
+                            <td>{{hour_data.time}}</td>
+                            <td><img src={{hour_data.weather_icon}} width="35" alt={{hour_data.weather_desc}}></td>
+                            <td>{{hour_data.temp_c}}&deg;C | {{hour_data.temp_f}}&deg;F</td>
+                            <td>{{hour_data.weather_desc}}</td>
+                            <td>{{hour_data.wind_kph}} km/h</td>
+                            <td>{{hour_data.pressure_mb}} mb</td>
+                            <td>{{hour_data.precip_mm}} mm</td>
+                            <td>{{hour_data.humidity}}%</td>
+                            <td>{{hour_data.cloud}}%</td>
+                            <td>{{hour_data.uv}}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+
+            <br>
+            <div class="has-text-centered">
+                <h1 class="is-size-3 is-size-5-mobile">Last 24 Hours Details</h1>
+                <br>
+                <div class="box">
+                    <p class="title is-3 is-size-5-mobile">Average Values</p>
+                    <div class="is-align-self-center">
+                        <article class="media">
+                            <div class="media-left">
+                                <p class="title is-5 pt-2">Temperature</p>
+                            </div>
+                            <div class="media-content">
+                            <div class="content">
+                                <h2>
+                                <strong class="tags are-large"><span class="tag is-hoverable">{{details.weather_details.temp_c}}&deg;C | {{details.weather_details.temp_f}}&deg;F</span></strong> 
+                                </h2>
+                            </div>
+                            </div>
+                        </article>
+                    
+                    
+                        <table class="table">
+                            <tr>
+                                <td>Wind Speed&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{last_hours_agg_values.wind_kph}} km/hr</td>
+                                <td>Pressure&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{last_hours_agg_values.pressure_mb}} mb</td>
+                            </tr>
+                            <tr>
+                                <td>Precipitation&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{last_hours_agg_values.precip_mm}} mm</td>
+                                <td>Humidity&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{last_hours_agg_values.humidity}}%</td>
+                            </tr>
+                            <tr>
+                                <td>Cloud Cover&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{last_hours_agg_values.cloud}}%</td>
+                                <td>UV Index&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{last_hours_agg_values.uv}}</td>
+                            </tr>
+                    
+                        </table>
+                    </div>
+
+                </div>
+
+                <h1 class="is-size-3 is-size-5-mobile">Last 24 Hours Timeline</h1>
+                <br>
+
+                <table class="table is-bordered  is-hoverable is-fullwidth has-text-centered">
+                    <tr>
+                        <th>Timing</th>
+                        <th>Condition</th>
+                        <th>Temperature</th>
+                        <th>Weather</th>
+                        <th>Wind Speed</th>
+                        <th>Pressure</th>
+                        <th>Precipitation</th>
+                        <th>Humidity</th>
+                        <th>Cloud Cover</th>
+                        <th>UV Index</th>
+                    </tr>
+                    {% for hour in timeline %}
+                        <tr class="{% if current_hour == hour.curr_time %} has-background-link-light {% endif %}" >
+                            <td>{{hour.curr_time}}</td>
+                            <td><img src={{hour.weather_icon}} width="35" alt={{hour.weather_desc}}></td>
+                            <td>{{hour.temp_c}}&deg;C | {{hour.temp_f}}&deg;F</td>
+                            <td>{{hour.weather_desc}}</td>
+                            <td>{{hour.wind_kph}} km/h</td>
+                            <td>{{hour.pressure_mb}} mb</td>
+                            <td>{{hour.precip_mm}} mm</td>
+                            <td>{{hour.humidity}}%</td>
+                            <td>{{hour.cloud}}%</td>
+                            <td>{{hour.uv}}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            <br>
+
+            <div class="has-text-centered">
+                <h1 class="is-size-3 is-size-5-mobile">Forecast Details</h1>
+                <br>
+                <table class="table is-bordered is-striped is-hoverable is-fullwidth has-text-centered">
+                    <tr>
+                        <th>Date</th>
+                        <th>Condition</th>
+                        <th>Weather</th>
+                        <th>Temperature</th>
+                        <th>Wind</th>
+                        <th>Pressure</th>
+                        <th>Precipitation</th>
+                        <th>Humidity</th>
+                        <th>Cloud Cover</th>
+                        <th>UV Index</th>
+                    </tr>
+                    {% for forecast in forecast_details %}
+                        <tr>
+                            <td>{{ forecast.date }}</td>
+                            <td><img src={{forecast.weather_icon}} width="35" alt={{forecast.weather_desc}}></td>
+                            <td>{{forecast.weather_desc}}</td>
+                            <td>{{ forecast.temp_c }}&deg;C | {{ forecast.temp_f }}&deg;F</td>
+                            <td>{{ forecast.wind }}km/h</td>
+                            <td>{{ forecast.pressure }}mb</td>
+                            <td>{{ forecast.precipitation }}mm</td>
+                            <td>{{ forecast.humidity }}%</td>
+                            <td>{{ forecast.cloud }}%</td>
+                            <td>{{ forecast.uv }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            <br>
+            <br>
+        </div>
+    {% else %}
+
+        <div class="box has-text-light has-background-grey">
+            <p class="title is-3 is-size-4-mobile">Sorry! No Data Found For {{city | title}}</p>
+            <div class="is-align-self-center">
+
+                <div class="columns is-align-items-center">
+                    <div class="column">
+                        <article class="media">
+                            <div class="media-left">
+                            <figure class="image is-96x96">
+                                <img src="https://cdn.weatherapi.com/weather/64x64/night/143.png" alt="No Data Found" />
+                            </figure>
+                            </div>
+                            <div class="media-content">
+                            <div class="content">
+                                <h2>
+                                <small class="is-size-5-mobile">No Data Found</small>
+                                <br />
+                                <strong class="tags are-large"><span class="tag is-hoverable">-- | --</span></strong> 
+                                </h2>
+                            </div>
+                            </div>
+                        </article>
+                    </div>
+                    <div class="column">
+                        
+                        <table class="table has-text-light">
+                            <tr>
+                                <td>Wind Speed&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --</td>
+                                <td>Pressure&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--</td>
+                            </tr>
+                            <tr>
+                                <td>Precipitation&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--</td>
+                                <td>Humidity&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--</td>
+                            </tr>
+                            <tr>
+                                <td>Cloud Cover&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--</td>
+                                <td>UV Index&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--</td>
+                            </tr>
+                    
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+
+            <br>
+            <small>Last Updated: --</small>
+        
+        </div>
+        <div class="has-text-centered container is-fluid has-background-white-ter py-5" style="height: 100vh; width: 100vw;">
+            <h3 class="title is-3">Please enter the City Name</h3>
+
+            <form class="form" action="{% url 'search_city' %}" method="get">
+                <input
+                    class="input is-large is-rounded"
+                    type="search"
+                    name="city"
+                    placeholder="Enter City Name"
+                    class="form-control"
+                />
+            </form>
+        </div>
+
+    {% endif %}
+
+
+{% endblock bodyblock %}
